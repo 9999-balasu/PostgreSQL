@@ -464,7 +464,9 @@ async function loadProducts() {
 <div id="productsContainer"></div>
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script>
+
+
+<!-- <script>
 const container = document.getElementById('productsContainer');
 
 async function loadProducts() {
@@ -520,7 +522,72 @@ async function buyProduct(amount) {
 }
 
 loadProducts();
+</script> -->
+
+
+
+
+<script>
+const container = document.getElementById('productsContainer');
+
+// Use your Render backend URL here
+const BACKEND_URL = 'https://postgresql-1-lss3.onrender.com';
+
+async function loadProducts() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/products`);
+    const products = await res.json();
+    if (!Array.isArray(products)) return;
+
+    container.innerHTML = '';
+    products.forEach(p => {
+      const div = document.createElement('div');
+      div.className = 'product';
+      div.innerHTML = `
+        <img src="${p.image_url}" alt="${p.name}" 
+             onerror="this.src='https://placehold.co/400x250?text=No+Image'" />
+        <h3>${p.name}</h3>
+        <p>${p.description}</p>
+        <p class="price">₹${p.price}</p>
+        <button onclick="buyProduct(${p.price})">Buy</button>
+      `;
+      container.appendChild(div);
+    });
+  } catch (err) {
+    console.error('Error loading products:', err);
+  }
+}
+
+async function buyProduct(amount) {
+  try {
+    const res = await fetch(`${BACKEND_URL}/create-order`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount })
+    });
+    const order = await res.json();
+
+    const options = {
+      key: "rzp_test_R9EIZ5WVUt146t",
+      amount: order.amount,
+      currency: order.currency,
+      name: "Mini Shop",
+      order_id: order.id,
+      handler: function(response){
+        alert('Payment successful! Payment ID: ' + response.razorpay_payment_id);
+      }
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.open();
+  } catch (err) {
+    console.error('Error creating order:', err);
+  }
+}
+
+loadProducts();
 </script>
+
 
 </body>
 </html>
