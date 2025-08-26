@@ -202,6 +202,10 @@ const Razorpay = require('razorpay');
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+app.use(cors({
+  origin: '*', // or your frontend URL
+}));
+
 
 // Use DATABASE_URL from .env (Render recommended)
 const pool = new Pool({
