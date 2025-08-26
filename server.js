@@ -84,6 +84,114 @@
 // app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 
+// require('dotenv').config();
+// const express = require('express');
+// const cors = require('cors');
+// const bodyParser = require('body-parser');
+// const { Pool } = require('pg');
+// const Razorpay = require('razorpay');
+// import pg from 'pg';
+
+// const { Pool } = pg;
+// const app = express();
+// app.use(cors());
+// app.use(bodyParser.json());
+
+
+
+
+
+// const pool = new Pool({
+//   user: process.env.DB_USER,
+//   host: process.env.DB_HOST,
+//   database: process.env.DB_NAME,
+//   password: process.env.DB_PASS,
+//   port: Number(process.env.DB_PORT),
+// });
+
+// // pool.connect()
+// //   .then(client => {
+// //     console.log('PostgreSQL connected to database:', process.env.DB_NAME);
+// //     client.release();
+// //   })
+// //   .catch(err => console.error('PostgreSQL connection error:', err.message));
+
+
+// // // Test DB connection
+// // pool.connect()
+// //   .then(client => {
+// //     console.log('PostgreSQL connected');
+// //     client.release();
+// //   })
+// //   .catch(err => console.error('PostgreSQL connection error:', err.message));
+
+
+
+
+
+// // Use DATABASE_URL from .env
+// const pool = new Pool({
+//   connectionString: process.env.DATABASE_URL,
+//   ssl: {
+//     rejectUnauthorized: false, // required for Render/Postgres
+//   },
+// });
+
+// // Test DB connection once
+// pool.connect()
+//   .then(client => {
+//     console.log('✅ PostgreSQL connected successfully to database');
+//     client.release();
+//   })
+//   .catch(err => console.error('❌ PostgreSQL connection error:', err.message));
+
+// export default pool;
+
+
+
+// // Razorpay instance
+// const razorpay = new Razorpay({
+//   key_id: process.env.RAZORPAY_KEY_ID,
+//   key_secret: process.env.RAZORPAY_KEY_SECRET
+// });
+
+// // GET products
+// app.get('/products', async (req, res) => {
+//   try {
+//     const result = await pool.query('SELECT * FROM products');
+//     res.json(result.rows);  // always return an array
+//   } catch (err) {
+//     console.error('Error fetching products:', err.message);
+//     res.status(500).json([]); // return empty array on error
+//   }
+// });
+
+// // Create Razorpay order
+// app.post('/create-order', async (req, res) => {
+//   const { amount, currency = 'INR' } = req.body;
+
+//   if (!amount || amount <= 0) return res.status(400).json({ error: 'Invalid amount' });
+
+//   const options = {
+//     amount: amount * 100, // in paise
+//     currency,
+//     receipt: `receipt_${Date.now()}`
+//   };
+
+//   try {
+//     const order = await razorpay.orders.create(options);
+//     res.json(order);
+//   } catch (err) {
+//     console.error('Razorpay error:', err.message);
+//     res.status(500).json({ error: 'Failed to create order' });
+//   }
+// });
+
+// const PORT = process.env.PORT || 5000;
+// app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -95,40 +203,21 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// PostgreSQL pool
-// const pool = new Pool({
-//   user: process.env.DB_USER,
-//   host: process.env.DB_HOST,
-//   database: process.env.DB_NAME,
-//   password: process.env.DB_PASS,
-//   port: process.env.DB_PORT,
-// });
-
-
-
+// Use DATABASE_URL from .env (Render recommended)
 const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASS,
-  port: Number(process.env.DB_PORT),
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false, // Render requires SSL
+  },
 });
 
+// Test DB connection once
 pool.connect()
   .then(client => {
-    console.log('PostgreSQL connected to database:', process.env.DB_NAME);
+    console.log('✅ PostgreSQL connected successfully');
     client.release();
   })
-  .catch(err => console.error('PostgreSQL connection error:', err.message));
-
-
-// Test DB connection
-pool.connect()
-  .then(client => {
-    console.log('PostgreSQL connected');
-    client.release();
-  })
-  .catch(err => console.error('PostgreSQL connection error:', err.message));
+  .catch(err => console.error('❌ PostgreSQL connection error:', err.message));
 
 // Razorpay instance
 const razorpay = new Razorpay({
@@ -151,10 +240,12 @@ app.get('/products', async (req, res) => {
 app.post('/create-order', async (req, res) => {
   const { amount, currency = 'INR' } = req.body;
 
-  if (!amount || amount <= 0) return res.status(400).json({ error: 'Invalid amount' });
+  if (!amount || amount <= 0) {
+    return res.status(400).json({ error: 'Invalid amount' });
+  }
 
   const options = {
-    amount: amount * 100, // in paise
+    amount: amount * 100, // Razorpay expects paise
     currency,
     receipt: `receipt_${Date.now()}`
   };
@@ -168,5 +259,6 @@ app.post('/create-order', async (req, res) => {
   }
 });
 
+// Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
