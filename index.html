@@ -1,376 +1,5 @@
+
 <!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mini Shop</title>
-  <style>
-    body { font-family: Arial; margin: 20px; }
-    .product { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; width: 250px; }
-    img { width: 100%; }
-    button { background: #4CAF50; color: white; border: none; padding: 10px; cursor: pointer; }
-  </style>
-</head>
-<body>
-
-<h1>Mini Shop</h1>
-<div id="productsContainer"></div>
-
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script>
-  const container = document.getElementById('productsContainer');
-
-  async function loadProducts() {
-    const res = await fetch('http://localhost:5000/products');
-    const products = await res.json();
-
-    products.forEach(p => {
-      const div = document.createElement('div');
-      div.className = 'product';
-      div.innerHTML = `
-        <img src="${p.image_url}" />
-        <h3>${p.name}</h3>
-        <p>${p.description}</p>
-        <p>₹${p.price}</p>
-        <button onclick="buyProduct(${p.price})">Buy</button>
-      `;
-      container.appendChild(div);
-    });
-  }
-
-  async function buyProduct(amount) {
-    const res = await fetch('http://localhost:5000/create-order', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount })
-    });
-    const order = await res.json();
-
-    const options = {
-      key: "YOUR_RAZORPAY_KEY_ID", 
-      amount: order.amount,
-      currency: order.currency,
-      name: "Mini Shop",
-      order_id: order.id,
-      handler: function (response){
-        alert('Payment successful! Payment ID: ' + response.razorpay_payment_id);
-      }
-    };
-
-    const rzp = new Razorpay(options);
-    rzp.open();
-  }
-
-
-async function loadProducts() {
-  try {
-    const res = await fetch('http://localhost:5000/products');
-    const products = await res.json();
-
-    if (!Array.isArray(products)) {
-      console.error('Products is not an array:', products);
-      return;
-    }
-
-    container.innerHTML = ''; // clear container
-    products.forEach(p => {
-      const div = document.createElement('div');
-      div.className = 'product';
-      div.innerHTML = `
-        <img src="${p.image_url}" />
-        <h3>${p.name}</h3>
-        <p>${p.description}</p>
-        <p>₹${p.price}</p>
-        <button onclick="buyProduct(${p.price})">Buy</button>
-      `;
-      container.appendChild(div);
-    });
-  } catch (err) {
-    console.error('Error loading products:', err);
-  }
-}
-
-
-  loadProducts();
-</script>
-
-</body>
-</html> -->
-
-
-
- <!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mini Shop</title>
-  <style>
-    body { font-family: Arial; margin: 20px; }
-    .product { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; width: 250px; }
-    img { width: 100%; }
-    button { background: #4CAF50; color: white; border: none; padding: 10px; cursor: pointer; }
-  </style>
-</head>
-<body>
-
-<h1>Mini Shop</h1>
-<div id="productsContainer"></div>
-
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script>
-  const container = document.getElementById('productsContainer');
-
-  async function loadProducts() {
-    try {
-      const res = await fetch('http://localhost:5000/products');
-      const products = await res.json();
-
-      if (!Array.isArray(products)) return;
-
-      container.innerHTML = '';
-      products.forEach(p => {
-        const div = document.createElement('div');
-        div.className = 'product';
-        div.innerHTML = `
-          <img src="${p.image_url}" />
-          <h3>${p.name}</h3>
-          <p>${p.description}</p>
-          <p>₹${p.price}</p>
-          <button onclick="buyProduct(${p.price})">Buy</button>
-        `;
-        container.appendChild(div);
-      });
-    } catch (err) {
-      console.error('Error loading products:', err);
-    }
-  }
-
-  async function buyProduct(amount) {
-    try {
-      const res = await fetch('http://localhost:5000/create-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount })
-      });
-      const order = await res.json();
-
-      const options = {
-        key: "rzp_test_R9EIZ5WVUt146t",
-        amount: order.amount,
-        currency: order.currency,
-        name: "Mini Shop",
-        order_id: order.id,
-        handler: function(response){
-          alert('Payment successful! Payment ID: ' + response.razorpay_payment_id);
-        }
-      };
-
-      const rzp = new Razorpay(options);
-      rzp.open();
-    } catch (err) {
-      console.error('Error creating order:', err);
-    }
-  }
-
-  loadProducts();
-</script>
-
-</body>
-</html>
- 
-
-
-
-  -->
-
-
-  <!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mini Shop</title>
-   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-      background-color: #f4f4f4;
-    }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
-      color: #333;
-    }
-
-    #productsContainer {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-    }
-
-    .product {
-      background-color: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      padding: 15px;
-      display: flex;
-      flex-direction: column;
-      transition: transform 0.2s;
-    }
-
-    .product:hover {
-      transform: translateY(-5px);
-    }
-
-    .product img {
-      width: 100%;
-      border-radius: 6px;
-      margin-bottom: 10px;
-    }
-
-    .product h3 {
-      font-size: 18px;
-      margin-bottom: 5px;
-      color: #333;
-    }
-
-    .product p {
-      font-size: 14px;
-      color: #555;
-      margin-bottom: 10px;
-    }
-
-    .product .price {
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-
-    button {
-      padding: 10px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    button:hover {
-      background-color: #45a049;
-    }
-
-    @media (max-width: 500px) {
-      body {
-        padding: 10px;
-      }
-
-      .product h3 {
-        font-size: 16px;
-      }
-
-      .product p, .product .price {
-        font-size: 13px;
-      }
-    }
-  </style> 
-
-
-
-
-
-
-</head>
-<body>
-
-  <!-- <div class="shop-container">
-    <img src="https://via.placeholder.com/400x250" alt="Product Image">
-    <h2>Sample Product</h2>
-    <p>This is a cool product</p>
-    <div class="price">₹500</div>
-    <button class="buy-btn">Buy</button>
-  </div> -->
-
-<!-- <h1>Mini Shop</h1>
-
-<div id="productsContainer"></div>
-
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script>
-  const container = document.getElementById('productsContainer');
-
-  async function loadProducts() {
-    try {
-      const res = await fetch('http://localhost:5000/products');
-      const products = await res.json();
-
-      if (!Array.isArray(products)) return;
-
-      container.innerHTML = '';
-      // products.forEach(p => {
-      //   const div = document.createElement('div');
-      //   div.className = 'product';
-      //   div.innerHTML = `
-      //     <img src="${p.image_url}" />
-      //     <h3>${p.name}</h3>
-      //     <p>${p.description}</p>
-      //     <p class="price">₹${p.price}</p>
-      //     <button onclick="buyProduct(${p.price})">Buy</button>
-      //   `;
-      //   container.appendChild(div);
-      // });
-      products.forEach(p => {
-  const div = document.createElement('div');
-  div.className = 'product';
-  div.innerHTML = `
-    <img src="${p.image_url}" alt="${p.name}" />
-    <h3>${p.name}</h3>
-    <p>${p.description}</p>
-    <p class="price">₹${p.price}</p>
-    <button onclick="buyProduct(${p.price})">Buy</button>
-  `;
-  container.appendChild(div);
-});
-    } catch (err) {
-      console.error('Error loading products:', err);
-    }
-  }
-
-  async function buyProduct(amount) {
-    try {
-      const res = await fetch('http://localhost:5000/create-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount })
-      });
-      const order = await res.json();
-
-      const options = {
-        key: "rzp_test_R9EIZ5WVUt146t",
-        amount: order.amount,
-        currency: order.currency,
-        name: "Mini Shop",
-        order_id: order.id,
-        handler: function(response){
-          alert('Payment successful! Payment ID: ' + response.razorpay_payment_id);
-        }
-      };
-
-      const rzp = new Razorpay(options);
-      rzp.open();
-    } catch (err) {
-      console.error('Error creating order:', err);
-    }
-  }
-
-  loadProducts();
-</script>
-
-</body>
-</html>  -->
-<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -466,63 +95,7 @@ async function loadProducts() {
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 
-<!-- <script>
-const container = document.getElementById('productsContainer');
 
-async function loadProducts() {
-  try {
-    const res = await fetch('http://localhost:5000/products');
-    const products = await res.json();
-    if (!Array.isArray(products)) return;
-
-    container.innerHTML = '';
-    products.forEach(p => {
-      const div = document.createElement('div');
-      div.className = 'product';
-      div.innerHTML = `
-        <img src="${p.image_url}" alt="${p.name}" 
-             onerror="this.src='https://placehold.co/400x250?text=No+Image'" />
-        <h3>${p.name}</h3>
-        <p>${p.description}</p>
-        <p class="price">₹${p.price}</p>
-        <button onclick="buyProduct(${p.price})">Buy</button>
-      `;
-      container.appendChild(div);
-    });
-  } catch (err) {
-    console.error('Error loading products:', err);
-  }
-}
-
-async function buyProduct(amount) {
-  try {
-    const res = await fetch('http://localhost:5000/create-order', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount })
-    });
-    const order = await res.json();
-
-    const options = {
-      key: "rzp_test_R9EIZ5WVUt146t",
-      amount: order.amount,
-      currency: order.currency,
-      name: "Mini Shop",
-      order_id: order.id,
-      handler: function(response){
-        alert('Payment successful! Payment ID: ' + response.razorpay_payment_id);
-      }
-    };
-
-    const rzp = new Razorpay(options);
-    rzp.open();
-  } catch (err) {
-    console.error('Error creating order:', err);
-  }
-}
-
-loadProducts();
-</script> -->
 
 
 
@@ -531,7 +104,9 @@ loadProducts();
 const container = document.getElementById('productsContainer');
 
 // Use your Render backend URL here
+
 const BACKEND_URL = 'https://postgresql-1-lss3.onrender.com';
+
 
 async function loadProducts() {
   try {
@@ -557,6 +132,10 @@ async function loadProducts() {
     console.error('Error loading products:', err);
   }
 }
+
+
+
+
 
 async function buyProduct(amount) {
   try {
@@ -588,6 +167,169 @@ async function buyProduct(amount) {
 loadProducts();
 </script>
 
+
+</body>
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Shop</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f4f4;
+  }
+  h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #333;
+  }
+  #productsContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+  }
+  .product {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s;
+    min-height: 400px;
+  }
+  .product:hover {
+    transform: translateY(-5px);
+  }
+  .product img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-bottom: 10px;
+  }
+  .product h3 {
+    font-size: 18px;
+    margin-bottom: 5px;
+    color: #333;
+  }
+  .product p {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 10px;
+    flex-grow: 1;
+  }
+  .product .price {
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  button {
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  button:hover {
+    background-color: #45a049;
+  }
+  @media (max-width: 500px) {
+    body { padding: 10px; }
+    .product h3 { font-size: 16px; }
+    .product p, .product .price { font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Mini Shop</h1>
+<div id="productsContainer">Loading products...</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+const container = document.getElementById('productsContainer');
+const BACKEND_URL = 'https://postgresql-1-lss3.onrender.com';
+
+// Load products from backend
+async function loadProducts() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/products`);
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || 'Failed to fetch products');
+    }
+    const products = await res.json();
+    if (!Array.isArray(products)) throw new Error('Invalid products format');
+
+    container.innerHTML = '';
+    products.forEach(p => {
+      const div = document.createElement('div');
+      div.className = 'product';
+      div.innerHTML = `
+        <img src="${p.image_url}" alt="${p.name}" 
+             onerror="this.src='https://placehold.co/400x250?text=No+Image'" />
+        <h3>${p.name}</h3>
+        <p>${p.description}</p>
+        <p class="price">₹${p.price}</p>
+        <button onclick="buyProduct(${p.price})">Buy</button>
+      `;
+      container.appendChild(div);
+    });
+  } catch (err) {
+    console.error('Error loading products:', err);
+    container.innerHTML = '<p style="color:red;">Failed to load products. Please try again later.</p>';
+  }
+}
+
+// Razorpay payment
+async function buyProduct(amount) {
+  try {
+    const res = await fetch(`${BACKEND_URL}/create-order`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount })
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || 'Failed to create order');
+    }
+
+    const order = await res.json();
+
+    const options = {
+      key: "rzp_test_R9EIZ5WVUt146t",
+      amount: order.amount,
+      currency: order.currency,
+      name: "Mini Shop",
+      order_id: order.id,
+      handler: function(response){
+        alert('Payment successful! Payment ID: ' + response.razorpay_payment_id);
+      },
+      modal: {
+        ondismiss: function() {
+          alert('Payment popup closed.');
+        }
+      }
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.open();
+  } catch (err) {
+    console.error('Error creating order:', err);
+    alert('Failed to create payment. See console.');
+  }
+}
+
+loadProducts();
+</script>
 
 </body>
 </html>
