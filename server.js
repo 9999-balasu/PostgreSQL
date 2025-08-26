@@ -192,30 +192,112 @@
 
 
 
+// require('dotenv').config();
+// const express = require('express');
+// const cors = require('cors');
+// const bodyParser = require('body-parser');
+// const { Pool } = require('pg');
+// const Razorpay = require('razorpay');
+
+// const app = express();
+// app.use(cors());
+// app.use(bodyParser.json());
+// app.use(cors({
+//   origin: '*', // or your frontend URL
+// }));
+
+
+// // Use DATABASE_URL from .env (Render recommended)
+// const pool = new Pool({
+//   connectionString: process.env.DATABASE_URL,
+//   ssl: {
+//     rejectUnauthorized: false, // Render requires SSL
+//   },
+// });
+
+// // Test DB connection once
+// pool.connect()
+//   .then(client => {
+//     console.log('✅ PostgreSQL connected successfully');
+//     client.release();
+//   })
+//   .catch(err => console.error('❌ PostgreSQL connection error:', err.message));
+
+// // Razorpay instance
+// const razorpay = new Razorpay({
+//   key_id: process.env.RAZORPAY_KEY_ID,
+//   key_secret: process.env.RAZORPAY_KEY_SECRET
+// });
+
+// // GET products
+// app.get('/products', async (req, res) => {
+//   try {
+//     const result = await pool.query('SELECT * FROM products');
+//     res.json(result.rows);  // always return an array
+//   } catch (err) {
+//     console.error('Error fetching products:', err.message);
+//     res.status(500).json([]); // return empty array on error
+//   }
+// });
+
+// // Create Razorpay order
+// app.post('/create-order', async (req, res) => {
+//   const { amount, currency = 'INR' } = req.body;
+
+//   if (!amount || amount <= 0) {
+//     return res.status(400).json({ error: 'Invalid amount' });
+//   }
+
+//   const options = {
+//     amount: amount * 100, // Razorpay expects paise
+//     currency,
+//     receipt: `receipt_${Date.now()}`
+//   };
+
+//   try {
+//     const order = await razorpay.orders.create(options);
+//     res.json(order);
+//   } catch (err) {
+//     console.error('Razorpay error:', err.message);
+//     res.status(500).json({ error: 'Failed to create order' });
+//   }
+// });
+
+// // Start server
+// const PORT = process.env.PORT || 5000;
+// app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
+
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const { Pool } = require('pg');
 const Razorpay = require('razorpay');
+const path = require('path');
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
-app.use(cors({
-  origin: '*', // or your frontend URL
-}));
 
+// Serve static files from the public folder
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Use DATABASE_URL from .env (Render recommended)
+// Serve index.html on root
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Database connection using DATABASE_URL
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
-    rejectUnauthorized: false, // Render requires SSL
+    rejectUnauthorized: false,
   },
 });
 
-// Test DB connection once
+// Test DB connection
 pool.connect()
   .then(client => {
     console.log('✅ PostgreSQL connected successfully');
@@ -233,29 +315,24 @@ const razorpay = new Razorpay({
 app.get('/products', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM products');
-    res.json(result.rows);  // always return an array
+    res.json(result.rows);
   } catch (err) {
     console.error('Error fetching products:', err.message);
-    res.status(500).json([]); // return empty array on error
+    res.status(500).json([]);
   }
 });
 
 // Create Razorpay order
 app.post('/create-order', async (req, res) => {
   const { amount, currency = 'INR' } = req.body;
-
-  if (!amount || amount <= 0) {
-    return res.status(400).json({ error: 'Invalid amount' });
-  }
-
-  const options = {
-    amount: amount * 100, // Razorpay expects paise
-    currency,
-    receipt: `receipt_${Date.now()}`
-  };
+  if (!amount || amount <= 0) return res.status(400).json({ error: 'Invalid amount' });
 
   try {
-    const order = await razorpay.orders.create(options);
+    const order = await razorpay.orders.create({
+      amount: amount * 100,
+      currency,
+      receipt: `receipt_${Date.now()}`
+    });
     res.json(order);
   } catch (err) {
     console.error('Razorpay error:', err.message);
